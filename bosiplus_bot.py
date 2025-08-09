@@ -18,7 +18,6 @@ BOSIPLUS_REPORT_URL = 'https://bsplus.manage-ione.com/th/finance/withdrawal/list
 def run_bot():
     print("เริ่มต้นการทำงานของบอท...")
     
-    # --- ส่วนตั้งค่า Chrome เหมือนเดิม ---
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
@@ -31,7 +30,6 @@ def run_bot():
         driver.get(BOSIPLUS_LOGIN_URL)
         
         try:
-            # --- ขั้นตอนล็อกอิน ---
             print("กำลังรอให้ช่อง Username โหลดเสร็จ...")
             username_field = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.ID, 'username'))
@@ -45,23 +43,21 @@ def run_bot():
             driver.find_element(By.TAG_NAME, 'button').click()
             print("ส่งข้อมูลล็อกอินแล้ว")
 
-            # --- เข้าสู่หน้ารายงาน ---
             time.sleep(3) 
             print(f"กำลังเข้าสู่หน้ารายงาน: {BOSIPLUS_REPORT_URL}")
             driver.get(BOSIPLUS_REPORT_URL)
 
-            # --- ‼️ ขั้นตอนใหม่: คลิกที่แท็บ 'สำเร็จ' ‼️ ---
-            print("กำลังค้นหาและคลิกที่แท็บ 'สำเร็จ'...")
-            # รอจนกว่าปุ่ม 'สำเร็จ' จะปรากฏและคลิกได้
+            # --- ‼️ อัปเกรด XPath ให้ยืดหยุ่นที่สุด ‼️ ---
+            print("กำลังค้นหาและคลิกที่แท็บ 'สำเร็จ' ด้วยวิธีใหม่...")
+            # รอจนกว่า 'องค์ประกอบใดๆ' ที่มีข้อความ 'สำเร็จ' จะปรากฏและคลิกได้
             success_tab_button = WebDriverWait(driver, 15).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'สำเร็จ')]"))
+                EC.element_to_be_clickable((By.XPATH, "//*[contains(., 'สำเร็จ')]"))
             )
             success_tab_button.click()
             print("คลิกแท็บ 'สำเร็จ' แล้ว!")
             
-            time.sleep(3) # รอสักครู่ให้ตารางข้อมูลโหลดใหม่
+            time.sleep(3) 
 
-            # --- ดึงข้อมูลจากตาราง ---
             print("กำลังรอให้ข้อมูลในตารางโหลด...")
             WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'table.table-bordered > tbody > tr'))
@@ -89,8 +85,7 @@ def run_bot():
         except Exception as e:
             print("เกิดข้อผิดพลาดร้ายแรงระหว่างการทำงาน!")
             print(e)
-            # driver.save_screenshot('error_screenshot.png') # บรรทัดนี้ใช้สำหรับดีบักบนเครื่องตัวเองเท่านั้น
-
+    
     print("บอททำงานเสร็จสิ้น")
 
 if __name__ == '__main__':
