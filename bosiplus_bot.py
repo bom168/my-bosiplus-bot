@@ -4,7 +4,6 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-# เพิ่ม 2 บรรทัดนี้
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -32,31 +31,38 @@ def run_bot():
         driver.get(BOSIPLUS_LOGIN_URL)
         
         try:
-            # --- ‼️ อัปเกรดส่วนล็อกอินให้รออย่างชาญฉลาด ‼️ ---
+            # --- ขั้นตอนล็อกอิน ---
             print("กำลังรอให้ช่อง Username โหลดเสร็จ...")
-            # สั่งให้รอจนกว่าจะเจอ element ที่มี id='username' และสามารถคลิกได้ (รอนานสุด 20 วิ)
             username_field = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.ID, 'username'))
             )
             username_field.send_keys(USERNAME)
             print("กรอก Username สำเร็จ")
 
-            # กรอก Password
             driver.find_element(By.ID, 'password').send_keys(PASSWORD)
             print("กรอก Password สำเร็จ")
 
-            # คลิกปุ่มล็อกอิน
             driver.find_element(By.TAG_NAME, 'button').click()
             print("ส่งข้อมูลล็อกอินแล้ว")
 
             # --- เข้าสู่หน้ารายงาน ---
-            time.sleep(3) # รอหลังล็อกอินสักครู่
+            time.sleep(3) 
             print(f"กำลังเข้าสู่หน้ารายงาน: {BOSIPLUS_REPORT_URL}")
             driver.get(BOSIPLUS_REPORT_URL)
 
-            # --- ดึงข้อมูลจากตาราง (ใช้การรอแบบชาญฉลาดเช่นกัน) ---
+            # --- ‼️ ขั้นตอนใหม่: คลิกที่แท็บ 'สำเร็จ' ‼️ ---
+            print("กำลังค้นหาและคลิกที่แท็บ 'สำเร็จ'...")
+            # รอจนกว่าปุ่ม 'สำเร็จ' จะปรากฏและคลิกได้
+            success_tab_button = WebDriverWait(driver, 15).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'สำเร็จ')]"))
+            )
+            success_tab_button.click()
+            print("คลิกแท็บ 'สำเร็จ' แล้ว!")
+            
+            time.sleep(3) # รอสักครู่ให้ตารางข้อมูลโหลดใหม่
+
+            # --- ดึงข้อมูลจากตาราง ---
             print("กำลังรอให้ข้อมูลในตารางโหลด...")
-            # ให้บอทรอจนกว่า 'แถวแรก' ของข้อมูลในตารางจะปรากฏขึ้นมา
             WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'table.table-bordered > tbody > tr'))
             )
@@ -66,7 +72,6 @@ def run_bot():
             print(f"พบข้อมูลทั้งหมด {len(table_rows)} แถว")
 
             for row in table_rows:
-                # ส่วน for loop เหมือนเดิม
                 cells = row.find_elements(By.TAG_NAME, 'td')
                 if len(cells) > 8: 
                     status = cells[8].text.strip()
@@ -82,10 +87,10 @@ def run_bot():
                         requests.post(WEBHOOK_URL, json=payload)
 
         except Exception as e:
-            # หากเกิดข้อผิดพลาด ให้พิมพ์ออกมาดู
             print("เกิดข้อผิดพลาดร้ายแรงระหว่างการทำงาน!")
             print(e)
-    
+            # driver.save_screenshot('error_screenshot.png') # บรรทัดนี้ใช้สำหรับดีบักบนเครื่องตัวเองเท่านั้น
+
     print("บอททำงานเสร็จสิ้น")
 
 if __name__ == '__main__':
