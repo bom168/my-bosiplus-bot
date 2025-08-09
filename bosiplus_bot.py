@@ -6,12 +6,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
 # --- ดึงข้อมูลลับจาก Environment Variables ที่เราจะตั้งค่าบน Render ---
-# ไม่ต้องแก้ไขส่วนนี้
 USERNAME = os.environ.get('BOSIPLUS_USER')
 PASSWORD = os.environ.get('BOSIPLUS_PASS')
 WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
 
-# --- URL เป้าหมาย (อัปเดตเป็นเวอร์ชันล่าสุดตามที่คุณให้มา) ---
+# --- URL เป้าหมาย (อัปเดตเป็นเวอร์ชันล่าสุด) ---
 BOSIPLUS_LOGIN_URL = 'https://bsplus.manage-ione.com/th/auth/login'
 BOSIPLUS_REPORT_URL = 'https://bsplus.manage-ione.com/th/finance/withdrawal/list'
 
@@ -33,12 +32,10 @@ def run_bot():
         print(f"กำลังเข้าสู่หน้าล็อกอิน: {BOSIPLUS_LOGIN_URL}")
         driver.get(BOSIPLUS_LOGIN_URL)
         
-        # ‼️ สำคัญ: ให้คุณหา ID ที่ถูกต้องจากหน้าเว็บ แล้วนำมาใส่แทนที่ตรงนี้ ‼️
-        # วิธีหา: ไปที่หน้าเว็บ > คลิกขวาที่ช่อง Username/Password > Inspect > แล้วหา id="xxx"
-        driver.find_element(By.ID, 'ID_ของช่อง_USERNAME').send_keys(USERNAME)
-        driver.find_element(By.ID, 'ID_ของช่อง_PASSWORD').send_keys(PASSWORD)
+        # --- แก้ไขเป็น ID ที่ถูกต้องแล้ว ---
+        driver.find_element(By.ID, 'username').send_keys(USERNAME)
+        driver.find_element(By.ID, 'password').send_keys(PASSWORD)
         
-        # หากปุ่มล็อกอินไม่มี ID อาจจะต้องหาด้วยวิธีอื่น เช่น Class Name หรือ XPath
         driver.find_element(By.TAG_NAME, 'button').click()
         print("ส่งข้อมูลล็อกอินแล้ว")
 
